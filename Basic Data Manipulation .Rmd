@@ -1,0 +1,82 @@
+---
+title: "Basic Data Manipulation"
+author: "Aren Simmons"
+date: "10/31/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Data Wrangling Exercise 1
+Clean this data set to make it easier to visualize and analyze
+
+```{r message = FALSE, warning= FALSE}
+library(dplyr)
+library(tidyr)
+library(readr)
+Data <- read_csv("refine - Sheet1.csv")
+tbl_df(Data)
+```
+
+## 1: Clean up brand names to standardize them and remove misspellings
+
+```{r}
+clean_companies <- Data %>%
+mutate(company = tolower(company))%>%
+mutate(company = 
+ifelse((substr(company,1,2) == "ak"), "akzo",
+       ifelse((substr(company,1,2) == "ph"|substr(company,1,2) =="fi"),"phillips",
+       ifelse((substr(company,1,2) == "un"), "unilever", 
+              ifelse((substr(company,1,2) == "va"), "van houten", company)))))
+View(clean_companies)
+```
+
+## 2: Separate product code and number into two columns for product code and product number
+
+```{r}
+separate_product <- separate(clean_companies,2, c("product_code","product_number"))
+View(separate_product)
+```
+
+## 3: Assigning the product code to represent the product categories
+```{r}
+product_categories <- separate_product %>% 
+  mutate("product_categories" = product_code) %>%
+  mutate(product_categories =
+           ifelse(product_categories == "p","Smartphone",
+         ifelse(product_categories == "v", "TV",
+                ifelse(product_categories == "x", "Laptop",
+                       ifelse(product_categories == "q", "Tablet", "na")))))
+          View(product_categories)
+```
+
+## 4: Combining the three address fields (address, city, country) to create a full address
+```{r}
+full_address <- product_categories %>% 
+  unite("full_address",address:country,sep = ",", remove = TRUE)
+View(full_address)
+```
+
+## 5: Creating dummy variables for company and product category
+```{r}
+dummy_var <- full_address %>% mutate("company_phillips" = company) %>%
+  mutate(company_phillips = ifelse(company_phillips == "phillips", "1",0 ))%>%
+  mutate("company_akzo" = company) %>%
+  mutate(company_akzo = ifelse(company_akzo == "akzo", "1", 0)) %>%
+  mutate("company_van_houten" = company) %>%
+  mutate(company_van_houten = ifelse(company_van_houten == "van houten","1", 0))%>%
+  mutate("company_unilever" = company) %>%
+  mutate(company_unilever = ifelse(company_unilever == "unilever", "1", 0))%>%
+  mutate("product_smartphone" = product_categories) %>%
+  mutate(product_smartphone = ifelse(product_smartphone == "Smartphone", "1",0))%>%
+  mutate("product_tv"= product_categories)%>%
+  mutate(product_tv = ifelse(product_tv == "TV","1",0))%>%
+  mutate("product_laptop"=product_categories)%>%
+  mutate(product_laptop = ifelse(product_laptop == "Laptop", "1", 0))%>%
+  mutate("product_tablet" = product_categories)%>%
+  mutate(product_tablet = ifelse(product_tablet == "Tablet","1",0))
+
+  View(dummy_var)
+```
