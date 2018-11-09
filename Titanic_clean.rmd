@@ -1,0 +1,50 @@
+---
+title: "Titanic_clean"
+author: "SimmonsMo"
+date: "11/4/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(readr)
+MV <- read_csv("Titanic_data.csv")
+```
+
+## 1. Filling in missing values for the Embarked section which should be marked "SouthHampton" 
+
+```{r}
+missing_embarked <- Titanic_data %>%
+  mutate(embarked = ifelse(is.na(embarked), "S", embarked))
+View(missing_embarked)
+```
+
+## 2. Calculate the mean of the Age column and use it to populate the missing values
+```{r}
+mean_age <- missing_embarked %>% 
+  mutate(age = ifelse(is.na(age), mean(age, na.rm = TRUE),age))
+View(mean_age)
+```
+
+I would have rather picked the median of the data because it is more representative of the data than the mean. The mean is skewed in either direction by outliers and is not a very good representation.
+
+## 3. Fill the empty slots of the Lifeboat column with a dummy value "None" 
+```{r}
+Lifeboat <- mean_age %>% mutate(boat = 
+  ifelse(is.na(boat),"None", boat))
+View(Lifeboat)
+```
+
+## 4. Create a new column if there was a cabin number associated with a passenger 
+```{r}
+Cabin_binary <- Lifeboat %>% mutate("has_cabin_number" = cabin) %>%
+  mutate(has_cabin_number = 
+           ifelse(is.na(cabin), "0" , "1"))
+View(Cabin_binary)
+```
+
