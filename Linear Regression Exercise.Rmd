@@ -1,0 +1,135 @@
+---
+title: "LinearReg_2.Rmd"
+author: "SimmonsMo"
+date: "1/12/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Exercise: least squares regression
+
+Use the /states.rds/ data set. Fit a model predicting energy consumed
+per capita (energy) from the percentage of residents living in
+metropolitan areas (metro).
+
+## 1. Examine/plot the data before fitting the model
+```{r}
+states.data <- readRDS("dataSets/states.rds") 
+#get labels
+states.info <- data.frame(attributes(states.data)[c("names", "var.labels")])
+#Examining the first 10 rows of the data
+head(states.info, 10)
+```
+
+##   2. Print and interpret the model `summary'
+
+```{r}
+states.energy <- subset(states.data, select= c(metro, energy))
+summary(states.energy)
+summary(lm(energy ~ metro, data = states.data))
+```
+
+The summary tells us that the variable metro is significant at the 95% confidence interval in predicting energy consumption. Unfortunately there is a low r-squared value of only .1154, suggesting that our model is not very accurate.
+
+##   3. `plot' the model to look for deviations from modeling assumptions
+
+```{r}
+states.energy.model <- lm(energy ~ metro, data = states.data)
+plot(states.energy.model)
+par(mar = c(4, 4, 2, 2), mfrow = c(1, 2))
+plot(states.energy.model, which = c(1, 2))
+```
+
+We see from our Q-Q plot that most of our residuals do not vary from our linear model. Our model has three outliers at 
+points 2, 19, and 51 meaning our model is not appropriate, but we will continue to use it. 
+
+We also observe that the residual values in our model have a pattern resembling a sharp increase for the outliers. Our assumption is that our residual values should be evenly and randomly distributed among our theoretical residual model however, we cannot control for every outlier.
+
+## Select one or more additional predictors to add to your model and repeat steps 1-3. Is this model significantly better than the model with /metro/ as the only predictor?
+
+Expanding our search to 20 variables
+```{r}
+head(states.info, 20)
+```
+
+Adding area to our model because we suspect that it's proportional to energy consumption. After testing, we also incorporate toxic (Per capita toxics released) and green (Per capita greenhouse gas).
+
+```{r}
+states.energy2 <- subset(states.data, select= c(energy, metro, toxic, green, area))
+summary(states.energy2)
+
+states.energy.model2 <- lm(energy~metro + toxic + green + area, data = na.omit(states.data))
+summary(states.energy.model2)
+```
+
+We see that our Green house gas emissions and Per capita toxics released are significant and will incorporate that into our model.
+Area has a .073 p-value and is not significant at the 95% confidence interval level. For this model we will leave it in because it increases our adjusted r-squared value.
+Adding the new variables (green, toxic and area) we end up with an adjusted R-squared value of .7612 compared to our first R-squared value of .097. This tells us that our model explains 76% of our data (66% more than our first model). This means that area, green house emissions and per capita toxic waste (in tons) is a much better metric to predict energy consumed. 
+
+## Plotting the model to look for deviations from modeling assumptions
+```{r}
+par(mar = c(4, 4, 2, 2), mfrow = c(1, 2))
+plot(states.energy.model2, which = c(1, 2))
+```
+Our Q-Q plot is now showing a set of 3 different outliers at 19, 44 and 46. We also observe that our model still has an increasing pattern from our Q-Q plot. 
+Even with our best predictors incorporated into the model, we cannot control for the outliers and conclude that our model is not the most appropriate.
+```{r}
+confint(states.energy.model2)
+hist(residuals(states.energy.model2)) 
+```
+
+Although our model has been deemed inappropriate, the eye-test for the histogram reveals a roughly normal distribution for our data when our new variables are incorporated.
+
+
+# Exercise: interactions and factors
+# ────────────────────────────────────────
+
+#   Use the states data set.
+
+#   1. Add on to the regression equation that you created in exercise 1 by
+#      generating an interaction term and testing the interaction.
+
+Adding interaction to the model
+```{r}
+states.energy.int <- lm(energy ~metro*area*toxic*green, data = na.omit(states.data))
+coef(summary(states.energy.int))
+```
+When we run the summary we observe a middling significance for each of the variables.
+
+##   2. Try adding region to the model. Are there significant differences
+##      across the four regions?
+
+Adding Region to our model
+```{r}
+states.energy3 <- subset(states.data, select= c(energy, metro, green, toxic, region))
+summary(states.energy3)
+
+states.energy.model3 <- lm(energy~metro + green + toxic + region, data = na.omit(states.data))
+summary(states.energy.model3)
+```
+
+When we add region to our model, we see that the southern region is significant and area becomes significant. This suggests that there are significant differences between the southern region compared to the other two regions, however I suspect that the significance is between area and the southern region. When we omit area, the significance is gone confirming my suspicion and suggesting that the energy consumption between the regions are not significantly different than one another. For our purposes we will omit area. 
+
+Adding interaction term to our model (region)
+```{r}
+states.energy.int2 <- lm(energy ~metro*region*toxic*green, data = na.omit(states.data))
+coef(summary(states.energy.int2))
+anova(states.energy.int2)
+```
+
+When we run anova, we see that there are significant differences in the Per capita toxics released and the region. We also see that toxic has a significant interaction when grouped with greenhouse gas emissions and the region. 
+
+```{r}
+contrasts(states.data$region)
+
+# change the reference group
+
+summary(lm(energy ~ C(region, base=4),
+                data=states.data))
+coef(summary(lm(energy ~ C(region, base=4),
+                data=states.data)))
+```
+
+We find that there are no significant differences across the four regions because the summary shows no signs of significance between each region. 
