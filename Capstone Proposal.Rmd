@@ -2,7 +2,7 @@
 title: "Capstone Proposal"
 author: "SimmonsMo"
 date: "2/9/2019"
-output: github_document
+output: rmarkdown::github_document
 ---
 
 ```{r setup, include=FALSE}
