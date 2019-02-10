@@ -1,0 +1,17 @@
+---
+title: "Capstone Proposal"
+author: "SimmonsMo"
+date: "2/9/2019"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+	
+  The cannabis industry is a multi-billion industry and is spending is projected to grow from $9.2 Billion in 2017 to $47.3 in a decade. In this project, we will be doing a deep dive into the properties of cannabis. More specifically we will explore the characteristics of cannabis to see if there are any relations to the ratings that were given to the strain in particular. We will explore if there are any effects that are highly sought after that might make a strain more appealing. We will prove whether or not organic compounds contribute to the flavors of cannabis. With this bit of information we can create a curated menu for customers. The data we will be using comes from 
+[kaggle.com](https://www.kaggle.com/jbeltranleon/ocp-and-cannabis-strains-hot-encoding#Cannabis%20and%20OCP%20Values%20Chemicals%20Hot%20Encoding.xlsx)
+which cites a combination of the Open Cannabis Project and the Cannabis DataSet. 
+
+  My approach will be to first select only the columns that I will be using and to clean whatever needs to be cleaned. The next step would be to plot trends, correlations or to find something that stands out statistically and to create a visualization of it. Lastly we will see if we can use clustering to separate out the three types and to see if we can classify them using their properties. Once this is all finished, we will present the data in an html format with our conclusions included. 
